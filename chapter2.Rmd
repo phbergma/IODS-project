@@ -1,12 +1,12 @@
 # Week ONE
 
-*This week was all about getting to know the programs and how to use them. I started by reading the GitHub instructions carefully since it was the most unfamiliar tool for me. I created an account for GitHub website and installed GitHub desktop from which I can update my diary with weekly excersices. On the GitHub website I could copy the project template made by course assistants. I could then modify those template for my own course diary.* 
+This week was all about getting to know the programs and how to use them. I started by reading the GitHub instructions carefully since it was the most unfamiliar tool for me. I created an account for GitHub website and installed GitHub desktop from which I can update my diary with weekly excersices. On the GitHub website I could copy the project template made by course assistants. I could then modify those template for my own course diary. 
 
-*I have been using R already for some years so this week's DataCamp exercises were quite easy for me. They introduced the basics of R. First exercise was about loading a dataset and looking at what's in it. With already provided code I drew a graph about people's attitudes versus their exam points.* 
+I have been using R already for some years so this week's DataCamp exercises were quite easy for me. They introduced the basics of R. First exercise was about loading a dataset and looking at what's in it. With already provided code I drew a graph about people's attitudes versus their exam points. 
 
 ![Scatterplot about people's attitudes and exam points.](C:\Users\Paula\Documents\GitHub\IODS-project\plotti1.png)
 
-*The rest of the exercises were quite straight-forward as well and by following the instructions they could be done pretty easily. It is always good to refresh one's memory by doing the basic exercises because, to be honest, often I still have to look even the basics up in Google because I have such a short memory :) The most useful exercises for me were the ones were I had to create functions. Here follows an example of a function I created. It counts the number of apples I have if we know the number of apples I had before (my_apples) and the number of apples that have gone bad.*
+The rest of the exercises were quite straight-forward as well and by following the instructions they could be done pretty easily. It is always good to refresh one's memory by doing the basic exercises because, to be honest, often I still have to look even the basics up in Google because I have such a short memory :) The most useful exercises for me were the ones were I had to create functions. Here follows an example of a function I created. It counts the number of apples I have if we know the number of apples I had before (my_apples) and the number of apples that have gone bad.
 
 ```{r, eval=FALSE}
 # New function here!
@@ -16,4 +16,6 @@ good_apples_count <- function(apples, bad_apples=4) return(apples - bad_apples)
 good_apples_count(my_apples)
 ```
 
-*I hadn't used RMarkdown before so there were definately many new things to learn this week! On this [cheatsheet](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf) I could find some useful tips on how everything works. First of all I learned the very basics. I learned to write on a document and how to add graphics and code to the document. Besides modifying the document templates, I also created a README-file for my GitHub repository page. Finally I also tried different themes on my course diary and ended up with sandstone because it seemed clear and simple enough for my taste.*
+
+
+I hadn't used RMarkdown before so there were definately many new things to learn this week! On this [cheatsheet](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf) I could find some useful tips on how everything works. First of all I learned the very basics. I learned to write on a document and how to add graphics and code to the document. Besides modifying the document templates, I also created a README-file for my GitHub repository page. Finally I also tried different themes on my course diary and ended up with *sandstone* because it seemed clear and simple enough for my taste.
