@@ -1,4 +1,4 @@
 
 # About the project
 
-*Write a short description about the course and add a link to your github repository here. This is an R markdown (.Rmd) file so you can use R markdown syntax. See the 'Useful links' page in the mooc area (chapter 1) for instructions.*
+*In this course we will learn  for example about data analysis and effective use of RMarkdown to better present our work done with R. We will also learn to use GitHub, that provides us the opportunity to share our work with other people.*
