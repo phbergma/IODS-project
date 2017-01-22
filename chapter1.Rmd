@@ -2,3 +2,5 @@
 # About the project
 
 *In this course we will learn  for example about data analysis and effective use of RMarkdown to better present our work done with R. We will also learn to use GitHub, that provides us the opportunity to share our work with other people.*
+
+*Link to my GitHub repository is https://github.com/phbergma/IODS-project.*
