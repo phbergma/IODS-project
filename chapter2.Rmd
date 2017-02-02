@@ -58,10 +58,9 @@ We can see that gender is a factor variable that has two levels, M for male and 
 The task was to find variables that could explain the variation of the variable points. So I took a look at the scatterplots between each of the variables in the data but left out gender because for a binary variable scatterplot is not really a meaningful way to go.
 
 ```{r,fig.height=6,fig.width=6}
-# Draw a scatter plot matrix of all the variables except in students2014.
+# Draw a scatter plot matrix of all the variables except gender in students2014.
 pairs(students2014[-1],col=students2014$gender,
       main="Scatterplot of all variables in the data")
-
 ```
 
 We can see that attitude seems to correlate somewhat strongly with points. Maybe some kind of correlation could be seen also between some other variables but at least for me this graph is not very clear. 
@@ -124,7 +123,7 @@ summary(my_model3)
 
 Now we can see that the p-value of attitude is 4.12e-09 and that the model explains 18.56 % of the variation in points. We lost some percents but I still think the model with the variable that actually explains the dependent variable is better than a model that has useless non-statistically-significant explanatory variables in it. According to this model if the attitude increases by 1, the points increase by 3.5255. A similar relation can be seen also in the scatterplot drawn before. 
 
-Finally I drew some diagnostic plots to see the goodness of the model I created.
+Finally I drew some diagnostic plots to see the goodness of fit of the model I created.
 
 ```{r, fig.height=6,fig.width=6}
 # Draw diagnostic plots for the model 3 using the plot() function. Choose the plots 1, 2 and 5
@@ -132,7 +131,7 @@ par(mfrow=c(2,2))
 plot(my_model3,which=c(1,2,5))
 ```
 
-In the first plot we can see residuals versus the fitted values. They should be vertically very randomly distributed on both sides of zero because in the ideal situation the residual that the model cannot explain will be random. So we are not missing some systematic thing going on that we didn't take into account. Luckily it seems that our model is successful in that aspect. The QQ-plot tells the same story - The more normally distributed the standardized residuals are, the better. In this case the points are quite beautifully on a straight line. The points in this and the previous plot are exactly the same but they are just plotted from a little bit different point of view. 
+In the first plot we can see residuals versus the fitted values. According to the assumptions of linear model, they should be vertically randomly distributed on both sides of zero because in the ideal situation the residual that the model cannot explain will be random. So we are not missing some systematic thing going on that we didn't take into account. Luckily it seems that our model is quite successful in that aspect. A little bit more points can be seen below zero than above but this is not drammatic in my opinion. The Q-Q-plot tells the same story - The more normally distributed the standardized residuals are, the better. This is because the linear model assumes the standardized residuals to be normally distributed. In this case the points are quite beautifully on a straight line, except for some points in the bottom left and top right. The points in this and the previous plot are exactly the same but they are just plotted from a little bit different point of view. 
 
 The third plot helps in spotting potential outliers that could influence the regression results. If there are observations outside the Cook's distance lines, these are the kind of outliers that have such an effect in the analysis that if we remove them, the outcome could be different. This time the Cook's distance lines are not even visible so the observations are well inside them. So nothing to worry, according to this plot there are no such outliers that could distort the analysis results.
 
