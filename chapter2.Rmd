@@ -1,3 +1,6 @@
+---
+output: html_document
+---
 # Week ONE
 
 This week was all about getting to know the programs and how to use them. I started by reading the GitHub instructions carefully since it was the most unfamiliar tool for me. I created an account for GitHub website and installed GitHub desktop from which I can update my diary with weekly excersices. On the GitHub website I could copy the project template made by course assistants. I could then modify those template for my own course diary. 
@@ -19,3 +22,117 @@ good_apples_count(my_apples)
 
 
 I hadn't used RMarkdown before so there were definately many new things to learn this week! On this [cheatsheet](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf) I could find some useful tips on how everything works. First of all I learned the very basics. I learned to write on a document and how to add graphics and code to the document. Besides modifying the document templates, I also created a README-file for my GitHub repository page. Finally I also tried different themes on my course diary and ended up with *sandstone* because it seemed clear and simple enough for my taste.
+
+
+# Week TWO
+This week was about regression and model validation. So in practice, we are trying to explain variables with other variables in the data. In the case of continuous variable to explain, that's done by creating a linear regression model with one dependent variable (the variable to be explained) and one or more explanatory variables. This week we are discovering linear models with some continuous variables.
+
+First of all I created a dataset for my analysis. The Rscript with all the codes I used to create that can be found in my [repository](https://github.com/phbergma/IODS-project) in a file called create_learning.R. If you would like to have a more careful look at the variables in the original dataset, you can find the documentation [here](http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt).
+
+The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there. 
+
+```{r,echo=TRUE}
+# Set working directory and call load the dataset into RStudio
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project")
+students2014<-read.table("learning2014.csv",sep=",",header=T)
+```
+
+Reading through this weeks DataCamp exercises I realized that this week I wil need the packages dplyr, ggplot2 and GGally. Since I already installed them earlier (with the command install.packages("packagename")) I only had to call them from my package library.
+
+```{r,message=FALSE}
+# Call packages needed this week, ggplot2, dplyr and GGally from the library
+library(ggplot2)
+library(dplyr)
+library(GGally)
+```
+
+When my dataset was read into RStudio, I first took a good look at it. It has 166 observations and 7 variables. The variables are gender, age, attitude, deep, surf, stra and points. By looking at the structure and the summary of the data the reader can get a clearer image of what kind of variables are they and what kind of values they get in this dataset.
+
+```{r}
+str(students2014)
+summary(students2014)
+```
+
+We can see that gender is a factor variable that has two levels, M for male and F for female, age and points are integer variables: Age varies between 17 and 55 while the median age is 22 years, points vary between 7 and 33 and the median value is 23. The median value is the value we get if we put all the values in order and take the one that is in the middle. The rest of the variables are numeric. In fact, deep, stra and surf are variables created by combining other variables in the way presented in the create_learning2014.R-script. deep contains variables connected to deep learning, stra variables connected to studying strategies and surf variables connected to surface learning. attitude is just the original Attitude variable divided by 10 so it will be on the same scale as the rest of the numeric variables in this data. points-variable tells us how much points each student in the dataset got on the exam. 
+
+The task was to find variables that could explain the variation of the variable points. So I took a look at the scatterplots between each of the variables in the data but left out gender because for a binary variable scatterplot is not really a meaningful way to go.
+
+```{r,fig.height=6,fig.width=6}
+# Draw a scatter plot matrix of all the variables except in students2014.
+pairs(students2014[-1],col=students2014$gender,
+      main="Scatterplot of all variables in the data")
+
+```
+
+We can see that attitude seems to correlate somewhat strongly with points. Maybe some kind of correlation could be seen also between some other variables but at least for me this graph is not very clear. 
+
+So I tried to look at the correlations better by plotting it with the instructions found from this week's DataCamp. I drew a plot that presents the correlations of each variable with each variable, for both genders separately and for all the observations, a scatterplot between each pair of variables and a density plot of each variable. For gender that is a binary variable it presents a boxplot that compares how the summary statistics of each variables vary according to gender. It also presents a histogram of a frequency distribution for each variable for both genders separately. In all the plots males are marked with the blueish color and women with red. 
+
+
+```{r,fig.height=6,fig.width=10}
+
+# create and draw a more advanced plot matrix with ggpairs()
+p2 <- ggpairs(students2014, mapping = aes(col=gender,alpha=0.3), 
+             lower = list(combo = wrap("facethist", bins = 20))) +
+  ggtitle("All variables against each other") +
+  theme(plot.title = element_text(hjust = 0.5,size=20,face='bold'))
+p2
+```
+
+We can see that there is the strongest correlation between points and attitude, so that affirms what I was suspecting based on a scatterplot. The correlation between those two is 0.437. I plotted those two variables in a scatterplot to take a better look.
+
+```{r, fig.height=4,fig.width=5}
+# Define and draw a plot about students' attitude versus exam points and draw it
+p1 <- ggplot(students2014, aes(x = attitude, y = points, col=gender)) +
+  geom_point() + geom_smooth(method="lm") + 
+  ggtitle("Student's attitude versus exam points")+
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),
+        axis.title= element_text(hjust = 0.5,size=14))
+p1
+```
+
+
+The second and the third strongest covariates for points are stra (0.146) and surf (-0.144). Usually age and gender are always taken into the linear model as explanatory variables but in this case the correlations were so small that I decided not to do that. (Also I tried to make a linear regression model with those variables and they were by no means significant so for the purposes of this exercise I will just assume that points doesn't depend on either age or gender.) I chose attitude, stra and surf as my explanatory variables and formed a linear model called my_model1.
+
+
+```{r}
+# Try to explain points with other variables in the data by fitting
+# a linear model
+my_model1<-lm(points~attitude+stra+surf,data=students2014)
+summary(my_model1)
+```
+
+We can see from the summary output of the model that the only statistically significant explanatory variable is attitude. It has a p-value of 1.93e-08 < 0.001 whereas the others' p-values are > 0.05. 
+
+Let's take a look at the rest of the summary output though. In this model, when the attitude increases by 1, the points increase by 3.3952 and when surf increases by one, the points decrease by 0.5861. 
+
+We can then see how much this model explains of the variation of points when we look at the multiple R-squared or the adjusted R-squared. It is usually better to look at the adjusted R-squared because the multiple R-squared increases no matter what variables you add to the model whereas the adjusted R-squared takes this into account and "punishes" for useless variables. The adjusted R-squared in this model is 0.1927 which means that this model explains 19.27 % of the variation of points. In other words, more than 80 % of this variable's variation still remains a mystery, as is the case in many variables in life. There could be other variables that explain points as well, such as family background, language skills, reading problems, genetics, a flue, you name it! So it is quite normal that the models can't explain all the variation, but I think in this case we could do better. 
+
+I noticed that the variable surf correlates relatively strongly with both attitude and stra. Usually what is hoped is that the explanatory variables would be independent from each others. So I decided to remove that from the analysis to see if it would be better this way.
+
+```{r}
+my_model2<-lm(points~attitude+stra,data=students2014)
+summary(my_model2)
+```
+
+Unfortunately we can still see that attitude is the only statistically significant explanatory variable. So what is left to do is to construct a model that has only one explanatory variable, attitude.
+
+```{r}
+my_model3<-lm(points~attitude,data=students2014)
+summary(my_model3)
+```
+
+Now we can see that the p-value of attitude is 4.12e-09 and that the model explains 18.56 % of the variation in points. We lost some percents but I still think the model with the variable that actually explains the dependent variable is better than a model that has useless non-statistically-significant explanatory variables in it. According to this model if the attitude increases by 1, the points increase by 3.5255. A similar relation can be seen also in the scatterplot drawn before. 
+
+Finally I drew some diagnostic plots to see the goodness of the model I created.
+
+```{r, fig.height=6,fig.width=6}
+# Draw diagnostic plots for the model 3 using the plot() function. Choose the plots 1, 2 and 5
+par(mfrow=c(2,2))
+plot(my_model3,which=c(1,2,5))
+```
+
+In the first plot we can see residuals versus the fitted values. They should be vertically very randomly distributed on both sides of zero because in the ideal situation the residual that the model cannot explain will be random. So we are not missing some systematic thing going on that we didn't take into account. Luckily it seems that our model is successful in that aspect. The QQ-plot tells the same story - The more normally distributed the standardized residuals are, the better. In this case the points are quite beautifully on a straight line. The points in this and the previous plot are exactly the same but they are just plotted from a little bit different point of view. 
+
+The third plot helps in spotting potential outliers that could influence the regression results. If there are observations outside the Cook's distance lines, these are the kind of outliers that have such an effect in the analysis that if we remove them, the outcome could be different. This time the Cook's distance lines are not even visible so the observations are well inside them. So nothing to worry, according to this plot there are no such outliers that could distort the analysis results.
+
