@@ -7,7 +7,9 @@ This week was all about getting to know the programs and how to use them. I star
 
 I have been using R already for some years so this week's DataCamp exercises were quite easy for me. They introduced the basics of R. First exercise was about loading a dataset and looking at what's in it. With already provided code I drew a graph about people's attitudes versus their exam points. 
 
-![Scatterplot about people's attitudes and exam points.](C:\Users\Paula\Documents\GitHub\IODS-project\plotti1.png)
+![*Figure 1. Attitudes versus exam points. Screenshot from DataCamp.*](C:\Users\Paula\Documents\GitHub\IODS-project\plotti1.png)
+
+
 
 The rest of the exercises were quite straight-forward as well and by following the instructions they could be done pretty easily. It is always good to refresh one's memory by doing the basic exercises because, to be honest, often I still have to look even the basics up in Google because I have such a short memory :) The most useful exercises for me were the ones were I had to create functions. Here follows an example of a function I created. It counts the number of apples I have if we know the number of apples I had before (my_apples) and the number of apples that have gone bad.
 
@@ -57,7 +59,7 @@ We can see that gender is a factor variable that has two levels, M for male and 
 
 The task was to find variables that could explain the variation of the variable points. So I took a look at the scatterplots between each of the variables in the data but left out gender because for a binary variable scatterplot is not really a meaningful way to go.
 
-```{r,fig.height=6,fig.width=6}
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 2. Scatterplot of all variables in the data.*"}
 # Draw a scatter plot matrix of all the variables except gender in students2014.
 pairs(students2014[-1],col=students2014$gender,
       main="Scatterplot of all variables in the data")
@@ -68,7 +70,7 @@ We can see that attitude seems to correlate somewhat strongly with points. Maybe
 So I tried to look at the correlations better by plotting it with the instructions found from this week's DataCamp. I drew a plot that presents the correlations of each variable with each variable, for both genders separately and for all the observations, a scatterplot between each pair of variables and a density plot of each variable. For gender that is a binary variable it presents a boxplot that compares how the summary statistics of each variables vary according to gender. It also presents a histogram of a frequency distribution for each variable for both genders separately. In all the plots males are marked with the blueish color and women with red. 
 
 
-```{r,fig.height=6,fig.width=10}
+```{r,fig.height=6,fig.width=10,fig.cap="*Figure 3. All variables against each other.*"}
 
 # create and draw a more advanced plot matrix with ggpairs()
 p2 <- ggpairs(students2014, mapping = aes(col=gender,alpha=0.3), 
@@ -80,11 +82,11 @@ p2
 
 We can see that there is the strongest correlation between points and attitude, so that affirms what I was suspecting based on a scatterplot. The correlation between those two is 0.437. I plotted those two variables in a scatterplot to take a better look.
 
-```{r, fig.height=4,fig.width=5}
+```{r, fig.height=4,fig.width=5,fig.cap="*Figure 4. Students' attitude versus exam points.*"}
 # Define and draw a plot about students' attitude versus exam points and draw it
 p1 <- ggplot(students2014, aes(x = attitude, y = points, col=gender)) +
   geom_point() + geom_smooth(method="lm") + 
-  ggtitle("Student's attitude versus exam points")+
+  ggtitle("Students' attitude versus exam points")+
   theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),
         axis.title= element_text(hjust = 0.5,size=14))
 p1
@@ -105,7 +107,7 @@ We can see from the summary output of the model that the only statistically sign
 
 Let's take a look at the rest of the summary output though. In this model, when the attitude increases by 1, the points increase by 3.3952 and when surf increases by one, the points decrease by 0.5861. 
 
-We can then see how much this model explains of the variation of points when we look at the multiple R-squared or the adjusted R-squared. It is usually better to look at the adjusted R-squared because the multiple R-squared increases no matter what variables you add to the model whereas the adjusted R-squared takes this into account and "punishes" for useless variables. The adjusted R-squared in this model is 0.1927 which means that this model explains 19.27 % of the variation of points. In other words, more than 80 % of this variable's variation still remains a mystery, as is the case in many variables in life. There could be other variables that explain points as well, such as family background, language skills, reading problems, genetics, a flue, you name it! So it is quite normal that the models can't explain all the variation, but I think in this case we could do better. 
+We can then see how much this model explains of the variation of points when we look at the multiple R-squared or the adjusted R-squared. It is usually better to look at the adjusted R-squared because the multiple R-squared increases no matter which variables you add to the model whereas the adjusted R-squared takes this into account and "punishes" for useless variables. The adjusted R-squared in this model is 0.1927 which means that this model explains 19.27 % of the variation of points. In other words, more than 80 % of this variable's variation still remains a mystery, as is the case in many variables in life. There could be other variables that explain points as well, such as family background, language skills, reading problems, genetics, a flue, you name it! So it is quite normal that the models can't explain all the variation, but I think in this case we could do better. 
 
 I noticed that the variable surf correlates relatively strongly with both attitude and stra. Usually what is hoped is that the explanatory variables would be independent from each others. So I decided to remove that from the analysis to see if it would be better this way.
 
@@ -121,11 +123,11 @@ my_model3<-lm(points~attitude,data=students2014)
 summary(my_model3)
 ```
 
-Now we can see that the p-value of attitude is 4.12e-09 and that the model explains 18.56 % of the variation in points. We lost some percents but I still think the model with the variable that actually explains the dependent variable is better than a model that has useless non-statistically-significant explanatory variables in it. According to this model if the attitude increases by 1, the points increase by 3.5255. A similar relation can be seen also in the scatterplot drawn before. 
+Now we can see that the p-value of attitude is 4.12e-09 and that the model explains 18.56 % of the variation in points.  According to this model if the attitude increases by 1, the points increase by 3.5255. A similar relation can be seen also in the scatterplot drawn before. 
 
 Finally I drew some diagnostic plots to see the goodness of fit of the model I created.
 
-```{r, fig.height=6,fig.width=6}
+```{r, fig.height=6,fig.width=6,fig.cap="*Figure 5. Diagnostic plots.*"}
 # Draw diagnostic plots for the model 3 using the plot() function. Choose the plots 1, 2 and 5
 par(mfrow=c(2,2))
 plot(my_model3,which=c(1,2,5))
