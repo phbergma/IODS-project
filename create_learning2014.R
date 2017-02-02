@@ -57,8 +57,8 @@ learning14<-subset(lrn2014,points>0)
 ##Set working direcory to the IODS-project folder
 setwd("C:/Users/Paula/Documents/GitHub/IODS-project")
 
-##Save the dataset in the IODS-project folder
-?write.csv
+##Save the dataset in the data-folder in the IODS-project folder
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
 write.csv(learning14,"learning2014.csv",row.names=F)
 
 ##Read the data into R again to demonstrate that the dataset creation was successful

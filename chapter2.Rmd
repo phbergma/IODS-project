@@ -31,12 +31,13 @@ This week was about regression and model validation. So in practice, we are tryi
 
 First of all I created a dataset for my analysis. The Rscript with all the codes I used to create that can be found in my [repository](https://github.com/phbergma/IODS-project) in a file called create_learning.R. If you would like to have a more careful look at the variables in the original dataset, you can find the documentation [here](http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt).
 
-The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there. 
+The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there. Then I changed the working directory to the folder where I actually want to keep everything related to the course.
 
 ```{r,echo=TRUE}
 # Set working directory and call load the dataset into RStudio
-setwd("C:/Users/Paula/Documents/GitHub/IODS-project")
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
 students2014<-read.table("learning2014.csv",sep=",",header=T)
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project")
 ```
 
 Reading through this weeks DataCamp exercises I realized that this week I wil need the packages dplyr, ggplot2 and GGally. Since I already installed them earlier (with the command install.packages("packagename")) I only had to call them from my package library.

@@ -153,10 +153,11 @@ good_apples_count(my_apples)</code></pre>
 <h1>Week TWO</h1>
 <p>This week was about regression and model validation. So in practice, we are trying to explain variables with other variables in the data. In the case of continuous variable to explain, that’s done by creating a linear regression model with one dependent variable (the variable to be explained) and one or more explanatory variables. This week we are discovering linear models with some continuous variables.</p>
 <p>First of all I created a dataset for my analysis. The Rscript with all the codes I used to create that can be found in my <a href="https://github.com/phbergma/IODS-project">repository</a> in a file called create_learning.R. If you would like to have a more careful look at the variables in the original dataset, you can find the documentation <a href="http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt">here</a>.</p>
-<p>The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there.</p>
+<p>The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there. Then I changed the working directory to the folder where I actually want to keep everything related to the course.</p>
 <pre class="r"><code># Set working directory and call load the dataset into RStudio
-setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project&quot;)
-students2014&lt;-read.table(&quot;learning2014.csv&quot;,sep=&quot;,&quot;,header=T)</code></pre>
+setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project/data&quot;)
+students2014&lt;-read.table(&quot;learning2014.csv&quot;,sep=&quot;,&quot;,header=T)
+setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project&quot;)</code></pre>
 <p>Reading through this weeks DataCamp exercises I realized that this week I wil need the packages dplyr, ggplot2 and GGally. Since I already installed them earlier (with the command install.packages(“packagename”)) I only had to call them from my package library.</p>
 <pre class="r"><code># Call packages needed this week, ggplot2, dplyr and GGally from the library
 library(ggplot2)
