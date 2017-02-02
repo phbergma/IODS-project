@@ -152,7 +152,73 @@ good_apples_count(my_apples)</code></pre>
 <div id="week-two" class="section level1">
 <h1>Week TWO</h1>
 <p>This week was about regression and model validation. So in practice, we are trying to explain variables with other variables in the data. In the case of continuous variable to explain, that’s done by creating a linear regression model with one dependent variable (the variable to be explained) and one or more explanatory variables. This week we are discovering linear models with some continuous variables.</p>
-<p>First of all I created a dataset for my analysis. The Rscript with all the codes I used to create that can be found in my <a href="https://github.com/phbergma/IODS-project">repository</a> in a file called create_learning.R. If you would like to have a more careful look at the variables in the original dataset, you can find the documentation <a href="http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt">here</a>.</p>
+<p>First of all I created a dataset for my analysis. The Rscript with all the codes I used to create that can be found in my <a href="https://github.com/phbergma/IODS-project">repository</a> in a file called create_learning.R. If you would like to have a more careful look at the variables in the original dataset, you can find the documentation <a href="http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-meta.txt">here</a>. Just in case, my script for data wrangling can be also found here below:</p>
+<pre class="r"><code>##Read the dataset in R
+learning2014&lt;-read.table(&quot;http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt&quot;,header=T)
+
+##Check the dimensions of the dataset
+dim(learning2014)
+##We can see that the dataset has 183 rows and 60 columns
+
+##Check the structure of the dataset
+str(learning2014)
+##We can see that all variables except for gender are integer, so they have
+##numeric values. Gender is a factor variable that has two levels, M and F for 
+##male and female
+
+##Select the questions related to deep, surface and strategic learning
+##as instructed in DataCamp
+deep_questions &lt;- c(&quot;D03&quot;, &quot;D11&quot;, &quot;D19&quot;, &quot;D27&quot;, &quot;D07&quot;, &quot;D14&quot;, &quot;D22&quot;, &quot;D30&quot;,&quot;D07&quot;,&quot;D14&quot;,&quot;D22&quot;,&quot;D30&quot;)
+surface_questions &lt;- c(&quot;SU02&quot;,&quot;SU10&quot;,&quot;SU18&quot;,&quot;SU26&quot;, &quot;SU05&quot;,&quot;SU13&quot;,&quot;SU21&quot;,&quot;SU29&quot;,&quot;SU08&quot;,&quot;SU16&quot;,&quot;SU24&quot;,&quot;SU32&quot;)
+strategic_questions &lt;- c(&quot;ST01&quot;,&quot;ST09&quot;,&quot;ST17&quot;,&quot;ST25&quot;,&quot;ST04&quot;,&quot;ST12&quot;,&quot;ST20&quot;,&quot;ST28&quot;)
+
+##Access the dplyr-library
+##install.packages(&quot;dplyr&quot;)
+library(dplyr)
+
+##Take the average of these theme questions to combine them into one variable
+##(one variable for each theme)
+deep_columns &lt;- select(learning2014, one_of(deep_questions))
+learning2014$deep &lt;- rowMeans(deep_columns)
+surface_columns &lt;- select(learning2014, one_of(surface_questions))
+learning2014$surf &lt;- rowMeans(surface_columns)
+strategic_columns &lt;- select(learning2014, one_of(strategic_questions))
+learning2014$stra&lt;-rowMeans(strategic_columns)
+
+##Create column 'attitude' by scaling the column &quot;Attitude&quot;
+learning2014$attitude &lt;- learning2014$Attitude/10
+
+##Choose the necessary columns to keep
+keep_columns &lt;- c(&quot;gender&quot;,&quot;Age&quot;,&quot;attitude&quot;, &quot;deep&quot;, &quot;stra&quot;, &quot;surf&quot;, &quot;Points&quot;)
+
+##Select the 'keep_columns' to create a new dataset
+lrn2014 &lt;- select(learning2014, one_of(keep_columns))
+
+##Check which variables are in the new data
+colnames(lrn2014)
+
+##Change the name of the second column
+colnames(lrn2014)[2] &lt;- &quot;age&quot;
+
+##Change the name of &quot;Points&quot; to &quot;points&quot;
+colnames(lrn2014)[7]&lt;-&quot;points&quot;
+
+##Exclude the observations where points&lt;=0
+learning14&lt;-subset(lrn2014,points&gt;0)
+
+##The data has now 166 observations and 7 variables as was in the instructions
+##so Yayy!!
+
+##Set working direcory to the IODS-project folder
+setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project&quot;)
+
+##Save the dataset in the data-folder in the IODS-project folder
+setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project/data&quot;)
+write.csv(learning14,&quot;learning2014.csv&quot;,row.names=F)
+
+##Read the data into R again to demonstrate that the dataset creation was successful
+learning2014&lt;-read.table(&quot;learning2014.csv&quot;,header=T,sep=&quot;,&quot;)
+str(learning2014)</code></pre>
 <p>The next thing I did was reading the created dataset back into RStudio. First I needed to set a working directory into the folder where my dataset is and then load the csv-file from there. Then I changed the working directory to the folder where I actually want to keep everything related to the course.</p>
 <pre class="r"><code># Set working directory and call load the dataset into RStudio
 setwd(&quot;C:/Users/Paula/Documents/GitHub/IODS-project/data&quot;)
