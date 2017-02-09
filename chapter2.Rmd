@@ -7,7 +7,7 @@ This week was all about getting to know the programs and how to use them. I star
 
 I have been using R already for some years so this week's DataCamp exercises were quite easy for me. They introduced the basics of R. First exercise was about loading a dataset and looking at what's in it. With already provided code I drew a graph about people's attitudes versus their exam points. 
 
-![*Figure 1. Attitudes versus exam points. Screenshot from DataCamp.*](C:\Users\Paula\Documents\GitHub\IODS-project\plotti1.png)
+![*Figure 1.1 Attitudes versus exam points. Screenshot from DataCamp.*](C:\Users\Paula\Documents\GitHub\IODS-project\plotti1.png)
 
 
 
@@ -129,7 +129,7 @@ We can see that gender is a factor variable that has two levels, M for male and 
 
 The task was to find variables that could explain the variation of the variable points. So I took a look at the scatterplots between each of the variables in the data but left out gender because for a binary variable scatterplot is not really a meaningful way to go.
 
-```{r,fig.height=6,fig.width=6,fig.cap="*Figure 2. Scatterplot of all variables in the data.*"}
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 2.1 Scatterplot of all variables in the data.*"}
 # Draw a scatter plot matrix of all the variables except gender in students2014.
 pairs(students2014[-1],col=students2014$gender,
       main="Scatterplot of all variables in the data")
@@ -140,7 +140,7 @@ We can see that attitude seems to correlate somewhat strongly with points. Maybe
 So I tried to look at the correlations better by plotting it with the instructions found from this week's DataCamp. I drew a plot that presents the correlations of each variable with each variable, for both genders separately and for all the observations, a scatterplot between each pair of variables and a density plot of each variable. For gender that is a binary variable it presents a boxplot that compares how the summary statistics of each variables vary according to gender. It also presents a histogram of a frequency distribution for each variable for both genders separately. In all the plots males are marked with the blueish color and women with red. 
 
 
-```{r,fig.height=6,fig.width=10,fig.cap="*Figure 3. All variables against each other.*"}
+```{r,fig.height=6,fig.width=10,fig.cap="*Figure 2.2 All variables against each other.*"}
 
 # create and draw a more advanced plot matrix with ggpairs()
 p2 <- ggpairs(students2014, mapping = aes(col=gender,alpha=0.3), 
@@ -152,7 +152,7 @@ p2
 
 We can see that there is the strongest correlation between points and attitude, so that affirms what I was suspecting based on a scatterplot. The correlation between those two is 0.437. I plotted those two variables in a scatterplot to take a better look.
 
-```{r, fig.height=4,fig.width=5,fig.cap="*Figure 4. Students' attitude versus exam points.*"}
+```{r, fig.height=4,fig.width=5,fig.cap="*Figure 2.3 Students' attitude versus exam points.*"}
 # Define and draw a plot about students' attitude versus exam points and draw it
 p1 <- ggplot(students2014, aes(x = attitude, y = points, col=gender)) +
   geom_point() + geom_smooth(method="lm") + 
@@ -197,7 +197,7 @@ Now we can see that the p-value of attitude is 4.12e-09 and that the model expla
 
 Finally I drew some diagnostic plots to see the goodness of fit of the model I created.
 
-```{r, fig.height=6,fig.width=6,fig.cap="*Figure 5. Diagnostic plots.*"}
+```{r, fig.height=6,fig.width=6,fig.cap="*Figure 2.4 Diagnostic plots.*"}
 # Draw diagnostic plots for the model 3 using the plot() function. Choose the plots 1, 2 and 5
 par(mfrow=c(2,2))
 plot(my_model3,which=c(1,2,5))

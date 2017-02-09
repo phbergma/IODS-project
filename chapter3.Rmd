@@ -1,0 +1,275 @@
+---
+output: html_document
+---
+
+# Week THREE
+
+This week is about logistic regression. Logistic regression is a common approach when we want to construct a regression model where the dependent variable is binary. Logistic regression model gives us a probability of the occurrence of the event (binary variable) with certain values of the explanatory variables. This probability is according to that model, and would be different in another model.
+
+Here is the code for the data wrangling part:
+
+```{r,eval=FALSE}
+#################
+#Paula Bergman
+#7.2.2017
+#Data wrangling to create the alcohol consumption dataset
+#Data downloaded from the website 
+#https://archive.ics.uci.edu/ml/machine-learning-databases/00356/
+
+#Set the working directory
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
+
+#Read the datasets into RStudio
+mat<-read.table("student-mat.csv",header=T,sep=";")
+por<-read.table("student-por.csv",header=T,sep=";")
+
+#Check the dimensions and the structure of the datasets
+dim(mat)
+str(mat)
+#We can see that the mat-data  consists of 395 observations and 33 variables, 
+#17 of which are of type factor and the rest integer.
+dim(por)
+str(por)
+#We can see that the por-data consists of 649 observations and 33 variables, 
+#which are exactly the same than in the mat-data.
+
+#Access the dplyr library
+library(dplyr)
+
+#Join the datasets by using the variables "school", "sex", "age", "address", 
+#"famsize", "Pstatus", "Medu", "Fedu", "Mjob", "Fjob", "reason", "nursery",
+#"internet" as (student) identifiers. This way only the students present in 
+#both datasets will be included in the data
+join_by <- c("school","sex","age","address","famsize","Pstatus","Medu","Fedu",
+             "Mjob","Fjob","reason","nursery","internet")
+mat_por <- inner_join(mat, por, by = join_by)
+mat_por<-inner_join(mat,por,by=join_by,suffix=c(".mat",".por"))
+
+dim(mat_por)
+str(mat_por)
+#Now the dataset has 382 observations and 53 variables. Those variables that I 
+#used for joining, are there only once but for the rest of the variables there are
+#two of each, separated with the endings .mat and .por
+
+#Create a new data frame with only the joined columns
+alc <- select(mat_por, one_of(join_by))
+
+#The columns in the datasets which were not used for joining the data
+notjoined_columns <- colnames(mat)[!colnames(mat) %in% join_by]
+
+#For every column name not used for joining...
+for(column_name in notjoined_columns) {
+  #select two columns from 'math_por' with the same original name
+  two_columns <- select(mat_por, starts_with(column_name))
+  #select the first column vector of those two columns
+  first_column <- select(two_columns, 1)[[1]]
+  
+  #if that first column vector is numeric...
+  if(is.numeric(first_column)) {
+    #take a rounded average of each row of the two columns and
+    #add the resulting vector to the alc data frame
+    alc[column_name] <- round(rowMeans(two_columns))
+  } else { # else if it's not numeric...
+    #add the first column vector to the alc data frame
+    alc[column_name] <- select(two_columns, 1)[[1]]
+  }
+}
+
+#Create an alcohol consumption variable alc_use to the joined data by 
+#taking the average of alcohol consumption variables in the data. 
+#Those are Dalc = Daily alcohol consumption and Walc = Weekly alcohol consumption
+alc$alc_use<-(alc$Dalc+alc$Walc)/2
+
+#Create a variable high_use to the joined data to describe whether the student
+#uses alcohol a high amount or not
+alc$high_use<-ifelse(alc$alc_use>2,TRUE,FALSE)
+
+#Glimpse at the joined and modified data to make sure everything is in order
+glimpse(alc)
+
+#It seems that everything is in the order: There are 382 observations and
+#35 variables as it is supposed to be.
+
+#Save the joined dataset into the data-folder in csv-form. Since the working
+#directory is already set into that folder, it doesn't have to be referenced 
+#anymore.
+write.csv(alc,"alc.csv",row.names=F)
+```
+
+First I read back into RStudio the dataset created in data wrangling part and checked the names of the variables in the dataset. I also called the possibly necessary packages from library.
+```{r}
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
+alc<-read.table("alc.csv",header=T,sep=",")
+names(alc)
+```
+
+```{r,message=FALSE}
+# Call packages needed this week, ggplot2, dplyr and GGally from the library
+library(ggplot2)
+library(dplyr)
+library(GGally)
+```
+
+This is a dataset of students of maths course and Portuguese course. (Data Set Information: P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7.) It consists of 35 variables, describing students' basic information, family background, free time activities, school performance and alcohol usage. The last two variables were created in the data wrangling part and explanations can be found in that code, and the more detailed description of the rest of the variables can be found [here](https://archive.ics.uci.edu/ml/datasets/STUDENT+ALCOHOL+CONSUMPTION#). 
+
+The purpose of this weeks analysis is to study the relationship between high/low alcohol consumption and some other variables of my choice in the data. I chose
+
+**Pstatus**, which tells whether the parents of the student are together (=T) or apart (=A) (dicotomous/binary variable)
+
+**age**, which tells the student's age in years (between 15 and 22, numeric variable)
+
+**studytime**, which tells how much time the student spends weekly studying (numeric variable: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) 
+
+**absences**, which tells how many absences the student has had from school (numeric variable, 0-93)
+
+My hypothesis for the parents' status is that if the parents are apart, it is more likely for the student to use high amount of alcohol. I also suppose that the older the student is, more probable is high alcohol consumption. I also would guess that the less time student spends studying, the more they use alcohol and the more absences they have from school the more they use alcohol. I hypotesize that the last two variables indicate that the student has less interest in education in general and I think that could be one predictive factor for high alcohol usage.
+
+##Graphical overview of the explanatory variables
+
+I first looked at these variables graphically, starting from the number of absences. I drew a boxplot where the boxes represent low users and high users.
+
+```{r,fig.cap="*Figure 3.1 Amount of absences in boxes by high usage of alcohol.*"}
+# Plot 
+qplot(high_use, absences, data=alc, geom="boxplot", fill=high_use,main="Boxplot about the amount of absences in \nthe alcohol usage level groups")
+```
+
+By looking at the boxes, especially the median value, it seems that the absences are more likely in the high use group than in the group of students who don't use high amounts of alcohol. We can also see that both groups have an outlier. This could be useful to remember later.
+
+To understand better the relationship between Pstatus and high_use, I decided to use the traditional way and to crosstabulate them.
+
+```{r xtable, message=FALSE}
+attach(alc)
+t<-table(high_use,Pstatus)
+t
+chisq.test(high_use,Pstatus)
+```
+
+It seems that those two variables don't depend on each others. I also did a Chi Square test to search confirmation to my speculations. P-value is very high which indicates that these two variables would not depend on each others, just like I suspected based on the contingency table.
+
+Then I decided to take a better look at the relationship between high_use and studytime. The latter is a categorical variable with 4 categories so I decided that the best way to go would be to draw a grouped barplot.
+
+```{r,fig.cap="*Figure 3.2 Studying time grouped by high usage of alcohol.*"}
+ggplot(alc, aes(studytime, fill=high_use)) + geom_bar(position="dodge") +
+  ggtitle("Barplot about studytime grouped by high_use")+ xlab("Study time") + ylab("Frequency") +
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),
+        axis.title= element_text(hjust = 0.5,size=14))
+```
+
+We can see that bigger proportion of those high amount users fall into the first two categories of studying than those who arent high amount users. We could thus suspect that maybe the variables have some kind of connection to each other.
+
+Then I looked at the relationship between high_use and age by drawing another grouped barplot.
+
+```{r,fig.cap="*Figure 3.3 Age grouped by high usage of alcohol.*"}
+ggplot(alc, aes(age, fill=high_use)) + geom_bar(position="dodge") +
+  ggtitle("Barplot about age grouped by high_use")+ xlab("Age") + ylab("Frequency") +
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),
+        axis.title= element_text(hjust = 0.5,size=14))
+```
+
+It seems that high_use peaks at age seventeen and the low use peaks at age sixteen. Anyway the distributions don't differ as much as in Figure 3.2.
+
+##Logistic Regression analysis
+Even though some of the graphics didn't quite support my initial hypothesis, I still decided to go on and use all of them in my logistic regression model. So here it is:
+
+```{r}
+#Construct the logistic regression model
+mymodel1 <- glm(high_use~Pstatus+age+studytime+absences,data=alc,family="binomial")
+
+#Print out a summary of the model
+summary(mymodel1)
+
+#Print out the coefficients of the model
+coef(mymodel1)
+```
+
+The results confirm what we have seen earlier in the plots and tabulations. Studytime and the number of absences seem to be statistically significant ( p < 0.05 ) in the model whereas parents' status and age don't seem to be that interesting. 
+
+To understand thoroughly the results of logistic regression there are a couple of terms we need to know. The following explanation of the terms is based on [Akin menetelmäblogi](https://tilastoapu.wordpress.com/tag/odds/) that is unfortunately only in Finnish. Many statistical terms are explained there in a very simple way. But back to the terms to understand logistic regression. First of all there is *odds*. Odds is simply the probability divided by the opposite of that probability so *odds* = p / (1 - p). So it is the relation between two probabilities. If we know the odds and want to find out p, we can get it like this: p = odds / ( 1 + odds ).
+
+Then there is *logit* that is the natural logarithm of *odds*. So to express it in mathematical terms *logit* = log( odds ). If we know the logit value, we can find out the odds like this: odds = exp( logit ). 
+
+By putting these together we can calculate the probability like this: p = ( exp( logit ) ) / ( 1 + exp( logit ) ). 
+
+Ok, so now lets look back at the logistic regression results. In our case the model would be:
+
+logit = 0.11619 * Pstatus + 0.17891 * age - 0.56071 * studytime + 0.07674 * absences
+
+The interpretation can be compared to linear regression but this time the dependent variable is not the variable of interest itself but the logit. So in this case the increase in age and absences increases the logit and the increas in studytime decreases the logit. Actually those variables that increase the logit also increase the probability of being a high amount user and the opposite. (As we remember p = ( exp( logit ) ) / ( 1 + exp( logit ) ). This approaches to 1 the bigger the logit value gets.). 
+
+The interpretation for Pstatus is a little bit different because it is a factor variable. Only the level that the parents are still together is included in the model. PstatusT denotes the difference between PstatusT and PstatusA. The coefficient of PstatusA is actually the intercept and so the coefficient of PstatusT would actually be -3.21051 + 0.11619 = -3.09432. (The source of this information is [this question and answer](http://stats.stackexchange.com/questions/60817/significance-of-categorical-predictor-in-logistic-regression) posted on Stack Overflow.)
+
+The null deviance suggests that there might be some overdispersion in the model, because it is bigger than the number of degrees of freedom (In the perfect model the null deviance = 0.)
+
+Lets then look at the odds ratios and their confidence intervals in this model. Actually we could also get the odds ratios just by exponentiating the coefficients from the summary of the model, but there is an easier way to do this by R commands. 
+
+```{r}
+#Compute odds ratios (OR)
+OR<-coef(mymodel1)%>%exp
+
+# compute confidence intervals (CI)
+CI<-confint(mymodel1)%>%exp
+
+# print out the odds ratios with their confidence intervals
+cbind(OR,CI)
+```
+
+When the odds ratio is greater than 1, the increase in the explanatory variable increases the risk of the occurrence of the dependent variable (in this case high_use = TRUE) and the opposite if the odds ratio is smaller than one. So in this case it seems that the increase in PstatusT, age and absences seem to increase the risk whereas the increase in studytime decreases the risk. Although the confidence interval of age includes 1, that means that it is possible that the odds ratio would be 1 so that age would not have any effect on the risk. 
+
+##Predictive power of the model
+
+So to sum up the results of the logistic regression a bit, I would say that studytime and absences had a statistically significant effect on high_use. So I will drop the rest of the variables and proceed to explore the predictive power of my new model as instructed in DataCamp.
+
+```{r}
+#Fit the new model
+mymodel2<-glm(high_use~studytime+absences+sex,data=alc,family="binomial")
+
+#Predict() the probability of high_use
+probabilities<-predict(mymodel2,type="response")
+
+#Add the predicted probabilities to 'alc'
+alc<-mutate(alc,probability=probabilities)
+
+#Use the probabilities to make a prediction of high_use
+alc<-mutate(alc,prediction=probability>0.5)
+
+#Tabulate the target variable versus the predictions
+table(high_use=alc$high_use,prediction=alc$prediction)
+```
+
+We can see that the amount of true negatives is 258, false positives 10, false negatives 88 and true positives 26. Since the observations in total are 382, that would make the probabilities of these respectively 0.675, 0.026, 0.23 and 0.068. So the training error in total would be 0.29.
+We can check these numbers like this:
+
+```{r}
+#Tabulate the target variable versus the predictions
+t<-table(high_use=alc$high_use,prediction=alc$prediction)%>%prop.table%>%addmargins
+```
+
+The same can also be seen in Figure 3.4.
+
+```{r,fig.cap="*Figure 3.4 High usage of alcohol versus probability.*"}
+#Draw a plot of 'high_use' versus 'probability' in 'alc'
+g<-ggplot(alc,aes(x=probability,y=high_use,col=prediction)) + geom_point() + ggtitle("high_use versus probability")
+g
+```
+
+If we compare these results to a simple guessing strategy of for example tossing a coin, this prediction model performs very well. By tossing a coin we would predict approximately 50 percent of the values being negative and 50 percent positive, and since these are not the actual proportion, the prediction would go terribly wrong. So I would say that it is better to base the prediction model on the actual data than anything else.
+
+Lets still look at the 10-fold cross-validation.
+
+```{r}
+#Define a loss function (average prediction error)
+loss_func<-function(class,prob){
+  n_wrong<-abs(class-prob)>0.5
+  mean(n_wrong)
+}
+
+#Compute the average number of wrong predictions in the (training) data
+loss_func(alc$high_use,alc$probability)
+
+#K-fold cross-validation
+library(boot)
+cv<-cv.glm(data=alc,cost=loss_func,glmfit=mymodel2,K=10)
+cv$delta[1]
+```
+
+My model seems to have the average of wrong predictions pretty close to the one in DataCamp model.
