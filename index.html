@@ -586,7 +586,7 @@ coef(mymodel1)</code></pre>
 <pre><code>## (Intercept)    PstatusT         age   studytime    absences 
 ## -3.21050861  0.11619233  0.17890859 -0.56070924  0.07674017</code></pre>
 <p>The results confirm what we have seen earlier in the plots and tabulations. Studytime and the number of absences seem to be statistically significant ( p &lt; 0.05 ) in the model whereas parents’ status and age don’t seem to be that interesting.</p>
-<p>To understand thoroughly the results of logistic regression there are a couple of terms we need to know. The following explanation of the terms is based on <a href="https://tilastoapu.wordpress.com/tag/odds/">Akin menetelmäblogi</a> that is unfortunately only in Finnish. Many statistical terms are explained there in a very simple way. But back to the terms to understand logistic regression. First of all there is <em>odds</em>. Odds is simply the probability divided by the opposite of that probability so <em>odds</em> = p / (1 - p). So it is the relation between two probabilities. If we know the odds and want to find out p, we can get it like this: p = odds / ( 1 + odds ).</p>
+<p>To understand thoroughly the results of logistic regression there are a couple of terms we need to know. The following explanation of the terms is based on <a href="https://tilastoapu.wordpress.com/tag/odds/">Akin menetelmablogi</a> that is unfortunately only in Finnish. Many statistical terms are explained there in a very simple way. But back to the terms to understand logistic regression. First of all there is <em>odds</em>. Odds is simply the probability divided by the opposite of that probability so <em>odds</em> = p / (1 - p). So it is the relation between two probabilities. If we know the odds and want to find out p, we can get it like this: p = odds / ( 1 + odds ).</p>
 <p>Then there is <em>logit</em> that is the natural logarithm of <em>odds</em>. So to express it in mathematical terms <em>logit</em> = log( odds ). If we know the logit value, we can find out the odds like this: odds = exp( logit ).</p>
 <p>By putting these together we can calculate the probability like this: p = ( exp( logit ) ) / ( 1 + exp( logit ) ).</p>
 <p>Ok, so now lets look back at the logistic regression results. In our case the model would be:</p>
@@ -660,7 +660,7 @@ loss_func(alc$high_use,alc$probability)</code></pre>
 library(boot)
 cv&lt;-cv.glm(data=alc,cost=loss_func,glmfit=mymodel2,K=10)
 cv$delta[1]</code></pre>
-<pre><code>## [1] 0.2565445</code></pre>
+<pre><code>## [1] 0.2617801</code></pre>
 <p>My model seems to have the average of wrong predictions pretty close to the one in DataCamp model.</p>
 <hr />
 </div>
