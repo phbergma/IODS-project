@@ -1,0 +1,275 @@
+---
+output: html_document
+---
+
+#Week FOUR
+
+This week we learned about clustering and classification. That was quite a new subject for me so I was eager to learn it. We are using Boston-data that can be found in MASS-package. So first I called the MASS-package from library and accessed the dataset from there.
+
+```{r,message=FALSE}
+#Call the MASS package
+library(MASS)
+
+#Load the data
+data("Boston")
+```
+
+Then I explored the data by looking at the structure and the summries of the data as usual.
+
+```{r}
+#Explore the data
+str(Boston)
+summary(Boston)
+```
+
+We can see that the dataset has 506 observations and 14 variables. Of these 14 variables, all except one are numeric, one is integer. It describes suburbs of Boston regarding their housing values. So for what I understood the observations are the suburbs and the variables are the aspects affecting the housing value. The variables include for example crime rate, nitrogen oxides concentration, weighted mean of distances to five Boston employment centres and average number of rooms per dwelling. The complete list of variables can be found here below:
+
+* crim = per capita crime rate by town.
+* zn = proportion of residential land zoned for lots over 25,000 sq.ft.
+* indus = proportion of non-retail business acres per town.
+* chas = Charles River dummy variable (= 1 if tract bounds river; 0 otherwise).
+* nox = nitrogen oxides concentration (parts per 10 million).
+* rm = average number of rooms per dwelling.
+* age = proportion of owner-occupied units built prior to 1940.
+* dis = weighted mean of distances to five Boston employment centres.
+* rad = index of accessibility to radial highways.
+* tax = full-value property-tax rate per \$10,000.
+* ptratio = pupil-teacher ratio by town.
+* black = 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town.
+* lstat = lower status of the population (percent).
+* medv = median value of owner-occupied homes in \$1000s.
+
+I then looked at the graphics of the variables. I decided to look at the density plots to understand better the distributions of the variables. 
+
+```{r,message=FALSE}
+#Access the tidyverse libraries tidyr, dplyr, ggplot2
+library(tidyr); library(dplyr); library(ggplot2)
+```
+
+```{r,fig.height=6,fig.width=10,fig.cap="*Figure 4.1 Density plots of the variables in Boston-data.*"}
+#Use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(Boston) %>% glimpse
+
+#Draw a density plot of each variable
+gather(Boston) %>% ggplot(aes(value,fill="#99999",alpha=0.3)) + facet_wrap("key", scales = "free") + 
+  geom_density() +
+  ggtitle("Density plots of the variables in the data") +
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),legend.position="none")
+```
+
+We can see for example that the average number of rooms per dwelling (rm) seems quite normally distributed. Crime rate variable (crim) peaks at zero which is a good thing: Most of the suburbs have very low crime rate per capita. It seems that there are not so many pupils per teacher, the figure peaks at a bit more than twenty, and as we saw from the summaries, the maximum was actually not more than 22. I remember from my own childhood that I had 31 classmates when I was 9 years old!
+
+I took a look at the relationships between variables by plotting them against each other.
+
+```{r,message=FALSE}
+library("GGally")
+```
+
+```{r,fig.height=10,fig.width=15,fig.cap="*Figure 4.2 All variables against each other.*"}
+#Create and draw a more advanced plot matrix with ggpairs()
+p2 <- ggpairs(Boston,  
+             lower = list(combo = wrap("facethist", bins = 20))) +
+  ggtitle("All variables against each other") +
+  theme(plot.title = element_text(hjust = 0.5,size=20,face='bold'))
+p2
+```
+
+Overall it seems that quite many variables are correlated with each others. Especially high correlation can be found for example between number of rooms per dwelling (rm) and median value of owner-occupied homes in \$1000s (medv) which is actually quite intuitive. I decided to draw yet another plot to visualize the correlations in a more easy way to look at. 
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 4.3 Correlations between variables.*"}
+#Calculate the correlation matrix and round it
+cor_matrix<-cor(Boston)
+
+library(corrplot)
+#Visualize the correlation matrix
+corrplot(cor_matrix, method="circle", type="upper",cl.pos="b",tl.pos="d",tl.cex=1.0)
+title("Correlations between variables",line=-20)
+```
+
+We can see that the strongest negative correlations are between dis and age, dis and nox, dis and indus and medv and lstat. The strongest positive correlations are between rad and tax, indus and nox, and indus and tax.
+
+##Linear Discriminant Analysis
+
+Linear discriminant analysis is a statistical method to find a linear combination to characterize the classes of a variable. It is thus somewhat distantly similar to regression analysis. It can be used to reduce dimensions, and so it is a little similar to Principal Component Analysis as well. 
+
+Before the analysis I standardized the variables in the data. That means that for every variable, I did the following: (variable - mean of the variable / standard deviation of that variable.
+
+```{r}
+#Center and standardize variables
+boston_scaled <- scale(Boston)
+
+#Summaries of the scaled variables
+summary(boston_scaled)
+#Make boston_scaled into a dataframe
+boston_scaled<-as.data.frame(boston_scaled)
+```
+
+We can now see that all the variables have 0 as their mean.
+
+```{r,fig.height=6,fig.width=10,fig.cap="*Figure 4.4 Density plots of the variables in Boston-data.*"}
+#Use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(boston_scaled) %>% glimpse
+
+#Draw a density plot of each variable
+gather(boston_scaled) %>% ggplot(aes(value,fill="#99999",alpha=0.3)) + facet_wrap("key", scales = "free") + 
+  geom_density() +
+  ggtitle("Density plots of the variables in the data") +
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),legend.position="none")
+```
+
+By looking at the density plots now we can maybe understand a bit better what just happened. The distributions still seem the same but the scales are different now.
+
+Then I created a categorical variable of the crime rate variable by using the code provided in DataCamp. I removed the original crime rate variable from the dataset and added the new categorical one into it.
+
+```{r}
+#Save the scaled crim as scaled_crim
+scaled_crim <- boston_scaled$crim
+
+#Summary of the scaled_crim
+summary(scaled_crim)
+
+#Create a quantile vector of crim and print it
+bins <- quantile(scaled_crim)
+bins
+
+#Create a categorical variable 'crime'
+crime <- cut(scaled_crim, breaks = bins, include.lowest = TRUE, label=c("low","med_low","med_high","high"))
+
+#Remove original crim from the dataset
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+
+#Add the new categorical value to scaled data
+boston_scaled <- data.frame(boston_scaled, crime)
+
+```
+
+The new crime rate variable is categorized so that the first quartile is the lowest category, the second quartile the second lowest, third quartile the second highest and fourth quartile the highest category.
+
+Next I created the training set and the test set. The training set contains 80 % randomly selected rows from the boston_scaled -dataset and the test set contains the rest.
+
+```{r}
+#Save the number of rows in the Boston dataset into n
+n <- nrow(boston_scaled)
+
+#Choose randomly 80% of the rows
+ind <- sample(n,  size = n * 0.8)
+
+#Create train set
+train <- boston_scaled[ind,]
+
+#Create test set 
+test <- boston_scaled[-ind,]
+```
+
+Train-set has 404 observations and test-set 102 variables. 
+
+Then I proceeded to perform the LDA.
+
+```{r}
+#Linear discriminant analysis
+lda.fit <- lda(crime ~ . , data = train)
+
+#Print the lda.fit object
+lda.fit
+
+#The function for lda biplot arrows
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+#Target classes as numeric
+classes <- as.numeric(train$crime)
+```
+
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 4.5 Results of the Linear Discriminant Analysis.*"}
+#Plot the lda results
+plot(lda.fit, dimen = 2,col=classes,pch=classes)
+lda.arrows(lda.fit, myscale=1)
+```
+
+Wee can see that the high crime rate class really stands out, whereas all the rest seem to be together.
+
+After that I saved the crime categories from the test set and removed the categorical crime variable from the test dataset.
+
+```{r}
+#Save the correct classes from test data
+correct_classes <- test$crime
+
+#Remove the crime variable from test data
+test <- dplyr::select(test, -crime)
+```
+
+Then I used the LDA model on the test data to explain the categories of the crime variable.
+
+```{r}
+#Predict classes with test data
+lda.pred <- predict(lda.fit, newdata = test)
+
+#Cross tabulate the results
+table(correct = correct_classes, predicted = lda.pred$class)
+
+```
+
+We can see that the model predicted the extreme values, low and high, correctly but there was some insecurity while predicting the middle values. Still more than half of the predictions of those as well are correct so the model is much better than guessing I would say.
+
+##Distances and clustering
+
+I reloaded the Boston-dataset and scaled it once again.
+
+```{r}
+data("Boston")
+#Center and standardize variables
+boston_scaled <- scale(Boston)
+#Make boston_scaled into a dataframe
+boston_scaled<-as.data.frame(boston_scaled)
+```
+
+The exercise tells me to calculate distances between observations and since it is not specified which distances should be used, I chose to use Euclidean distances because they are the most common.
+
+```{r}
+#Euclidean distance matrix
+dist_eu <- dist(boston_scaled)
+```
+
+Then I run k-means on the distances. First I used 15 clusters.
+
+```{r}
+#k-means clustering
+km <-kmeans(dist_eu, centers = 15)
+```
+
+I was trying to determine the right amount of clusters so I ran these codes from the DataCamp exercises:
+
+```{r}
+#Determine the number of clusters
+k_max <- 10
+
+#Calculate the total within sum of squares
+twcss <- sapply(1:k_max, function(k){kmeans(dist_eu, k)$tot.withinss})
+```
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 4.6 Results of k-means clustering.*"}
+#Visualize the results
+plot(1:k_max, twcss, type='b')
+```
+
+We can see from the plot that the most radical change happens at 2, so the right number of clusters to be used is 2. So I performed the k-means clustering again, this time with two clusters.
+
+```{r}
+#k-means clustering
+km <-kmeans(dist_eu, centers = 2)
+```
+
+And finally, here is the graphical representation of the clusters:
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 4.7 Results of k-means clustering with 2 clusters.*"}
+pairs(boston_scaled, col = km$cluster,main="Clustering with 2 clusters")
+```
+
+I was maybe expecting something even more clear from this graph. But it can be seen that most often the black and red spots separate from each other and are rarely mixed. In some plots a clear pattern can be seen, for example in the plot between tax and crim. But for example between ptratio and medv, the clusters are not very clearle separated from each others. 
