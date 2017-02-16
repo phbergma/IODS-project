@@ -36,3 +36,12 @@ gii$Pop2edR<-gii$Pop2edF/gii$Pop2edM
 
 #The ratio of females and males labour force participation
 gii$LFPRMR<-gii$LFPRF/gii$LFPRM
+
+#Join the two datasets by using country as identifier
+human<-inner_join(hd, gii, by = "cntr")
+#The new dataset has 195 observations and 19 variables
+
+#Save the data in the data-folder
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
+write.csv(human,"human.csv",row.names=F)
+
