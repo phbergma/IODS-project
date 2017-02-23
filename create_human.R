@@ -1,3 +1,7 @@
+#######################
+#Data Wrangling Part1#
+#######################
+
 #Read the Human Development - and Gender Inequality -datasets into RStudio
 hd <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human_development.csv", stringsAsFactors = F)
 gii <- read.csv("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/gender_inequality.csv", stringsAsFactors = F, na.strings = "..")
@@ -45,3 +49,39 @@ human<-inner_join(hd, gii, by = "cntr")
 setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
 write.csv(human,"human.csv",row.names=F)
 
+#######################
+#Data Wrangling Part2#
+#######################
+human<-read.csv("human.csv",header=T)
+
+#Mutate the data: transform the Gross National Income (GNI) variable to numeric
+human$GNI<-str_replace(human$GNI, pattern=",", replace ="") %>% as.numeric
+
+#Exclude unneeded variables: keep only the columns matching the following 
+#variable names (described in the meta file above):  "cntr", "Pop2edR", 
+#"LFPRMR", "EYE", "LEatB", "GNI", "MatMort", "AdBirthr", "RepParl"
+myvars<-c("cntr", "Pop2edR", "LFPRMR", "EYE", "LEatB", "GNI", "MatMort", "AdBirthr", "RepParl")
+human1<-human[myvars]
+
+#Remove all rows with missing values
+human2<-na.omit(human1)
+
+#human2 has 162 observations and 9 variables
+
+#Remove the observations which relate to regions instead of countries
+#Name rows by country names
+last <- nrow(human2) - 7
+human_ <- human2[1:last, ]
+rownames(human_) <- human_$cntr
+
+#human_ has 155 observations and 9 variables
+
+#Remove the country name column from the data
+human_ <- select(human_, -cntr)
+
+#human_ has now 155 observations and 8 variables
+
+#Save the human data in the data folder including 
+#the row names. Overwrite the old human data
+write.table(human_,"human.csv",row.names=T)
+human_testi<-read.csv("human.csv",header=T,sep="")

@@ -1,0 +1,207 @@
+---
+output: html_document
+---
+
+#Week FIVE
+
+This week we learned about dimensionality reduction. I have some previous knowledge about some of these techniques but I find it useful to refresh my memory since these are still pretty difficult to me. Dimensionality reduction can sometimes seem pretty abstract in my opinion!
+
+First I read the dataset human back into RStudio and checked its structure and dimensions
+
+```{r,message=FALSE}
+#Read the data
+setwd("C:/Users/Paula/Documents/GitHub/IODS-project/data")
+human<-read.csv("human.csv",header=T,sep="")
+```
+
+```{r}
+#Explore the data
+dim(human)
+str(human)
+```
+
+The dataset has 155 observations and 8 variables. The rows are named with country names instead of numbers (from 1-155) as usual. The variables are all numeric or integer and related to health and knowledge and empowerment. There is 
+* Pop2edR that is the ratio of female and male populations with secondary education in each country
+* LFPRMR that is the ratio of labour force participation of females and males in each country
+* EYE that is the expected years of education
+* LEatB that is life expectancy at birth
+* GNI that is gross national income per capita
+* MatMort that is maternal mortality ratio
+* AdBirth that is adolescent birth rate
+* RepParl that is percetange of female representatives in parliament
+
+
+I then looked at the graphics of the variables. Since all are either numeric or integer, I decided to look at the density plots to understand better the distributions of the variables. 
+
+```{r,message=FALSE}
+#Access the tidyverse libraries tidyr, dplyr, ggplot2
+library(tidyr); library(dplyr); library(ggplot2)
+```
+
+```{r,fig.height=6,fig.width=10,fig.cap="*Figure 5.1 Density plots of the variables in human-data.*"}
+#Use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(human) %>% glimpse
+
+#Draw a density plot of each variable
+gather(human) %>% ggplot(aes(value,fill="#99999",alpha=0.3)) + facet_wrap("key", scales = "free") + 
+  geom_density() +
+  ggtitle("Density plots of the variables in the human-data") +
+  theme(plot.title = element_text(hjust = 0.5,size=16,face='bold'),legend.position="none")
+```
+
+We can see that the most normally distributed variable seems to be expected years of education. Luckily maternal mortality and adolescent births peak near zero. Unfortunately it seems that the mode of the feminine representation in parliament is under 20. It also seems that most of the countries have quite low gross national income and only some of them have high.
+
+Then I took a look at the relationships between variables by plotting them against each other.
+
+```{r,message=FALSE}
+library("GGally")
+```
+
+```{r,fig.height=10,fig.width=15,fig.cap="*Figure 5.2 All variables against each other.*"}
+#Create and draw a more advanced plot matrix with ggpairs()
+p2 <- ggpairs(human,  
+             lower = list(combo = wrap("facethist", bins = 20))) +
+  ggtitle("All variables of human-data against each other") +
+  theme(plot.title = element_text(hjust = 0.5,size=20,face='bold'))
+p2
+```
+
+The strongest correlation can be found between maternal mortality and life expectancy at birth (-0.857). It is a negative correlation and that means more maternal mortality there is, the less the child is expected to live. That makes sense, even though I think it's very sad. Expected years of education correlate also quite strongly with maternal mortality. More maternal mortality there is, the less are the expected years of schooling. In general it can be said that the data is quite correlated. The least correlation there is between the ratio of female and male populations with secondary education in each country and the ratio of labour force participation of females and males in each country (0.00956).
+
+##Principal Component Analysis
+
+###Principal Component Analysis on unstandardized data
+
+Next I proceeded into performing principal component analysis on the human data.
+
+```{r}
+#Perform principal component analysis (with the SVD method)
+pca_human1 <- prcomp(human)
+pca_human1
+pca_human1b<-summary(pca_human1)
+pca_pr <- round(100*pca_human1b$importance[2, ], digits = 1)
+
+#Print out the percentages of variance
+pca_pr
+```
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 5.3 Principal component representation. GNI on the x-axis, no other dimensions standing out. PC1 explaining 100 % of the variation between countries and PC2 0 %.*"}
+#Draw a biplot of the principal component representation and the original variables
+biplot(pca_human1, choices = 1:2,cex = c(0.8, 1),col = c("tomato", "blue"),main="Principal component representation of variables.")
+```
+
+We can see that in this case all the variability is explained by the first principal component. The plot doesn't seem very informative: Only the arrow for GNI is visible because the others have length 0. So that is exactly what the percentages are showing as well: GNI 100 % and others 0. Most of the countries are all together in one unclear spot. But for example Qatar stands out: It has drammatically higher GNI than any other country in the data.
+
+###Principal Component Analysis on standardized data
+
+I then performed the principal component analysis on the standardized human data.
+
+```{r}
+#Standardize the variables
+human_std <- scale(human)
+
+#Print out summaries and standard deviations of the standardized variables
+summary(human_std)
+apply(human_std,2,sd)
+
+#Perform principal component analysis (with the SVD method)
+pca_human2 <- prcomp(human_std)
+pca_human2
+pca_human2b<-summary(pca_human2)
+pca_pr2 <- round(100*pca_human2b$importance[2, ], digits = 1)
+
+#Print out the percentages of variance
+pca_pr2
+```
+
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 5.4 Principal component representation. Standardized human-data. PC1 explaining 53.6 % of the variation between countries and PC2 explaining 16.2 %.*"}
+#Draw a biplot of the principal component representation and the original variables
+biplot(pca_human2, choices = 1:2,cex = c(0.8, 1),col = c("tomato", "blue"),main="Principal component representation of variables.\n Standardized human-data")
+```
+
+Now the situation is much clearer. The standardation sets all variables standard deviation to 1 and mean to 0 so the variables are more meaningful to handle together this way. We can see that the first component explains 53.6 % of the variation and second principal component explains 16.2 %, after that the percents are already drammatically lower. 
+
+As was stated earlier, maternal mortality and life expectancy at birth correlate negatively and very strongly with each other, and this can be seen from the figure as well: Those two variables have their arrows pointing to totally opposite directions. Maternal mortality has strong, positive correlation with adolescent birth ratio, that's why their arrows are pointing almost towards the same direction.
+
+So the life expectancy, GNI, expected years of education and the ratio of female and male populations with secondary education in each country on the other side and maternal mortality and adolescent birth ratio on the other seem to be responsible on the variation on x-axis. So the component could be called Well-being. More the countries are on the left, more well-being they are and vice versa. Parallel with the y-axis we can see the ratio of labour force participation of females and males in each country and female representation in parliament, pointing pretty much towards the same direction. So in my personal opinion this dimension of the figure could be called Feminism. Higher the countries are on the y-axis, more they have women working and in parliament.
+
+##Multiple Correspondence Analysis on tea-dataset
+
+Then I went on doing a multiple correspondence with tea-dataset from the package FactoMineR. Multiple correspondence analysis investigates multiple variables and treats them in a way that they could be presented in a two dimensional scale. An integral part of the analysis are the graphs: They present the relationships between the two dimensions but also the relationships between the classes of variables.
+
+The variables in the analysis can't be continuous. The method isn't based on statistical testing and the main purpose of it is to *describe* with the help of the figures.
+
+First I loaded the data and explored it a little bit.
+
+```{r,message=FALSE}
+library("FactoMineR")
+```
+
+```{r}
+data(tea)
+```
+
+```{r}
+#Explore the data
+dim(tea)
+str(tea)
+```
+
+The data has 36 variables and 300 observations. The variables are mostly factors, only age is integer. Actually also age has a factor version of it, called age_Q. Just by looking at the structure it is kind of hard to say what the data is all about. It has for example variables named by different meals of the day. Then there are a lot of adjective-variables such as feminine, sophisticated and healthy. To understand the data better, I looked what R:s Help tells about it.
+
+```{r,eval=FALSE}
+?tea
+```
+
+Help-page tells the following:
+
+"Description: The data used here concern a questionnaire on tea. We asked to 300 individuals how they drink tea (18 questions), what are their product's perception (12 questions) and some personal details (4 questions).
+
+Format: A data frame with 300 rows and 36 columns. Rows represent the individuals, columns represent the different questions. The first 18 questions are active ones, the 19th is a supplementary quantitative variable (the age) and the last variables are supplementary categorical variables."
+
+```{r,fig.height=10,fig.width=10,fig.cap="*Figure 5.5 Bar plots of the variables in tea-data.*"}
+#Use gather() to gather columns into key-value pairs and then glimpse() at the resulting data
+gather(tea) %>% glimpse
+
+#Draw a bar plot of each variable
+gather(tea) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+```
+
+I decided to use the variables Tea, How, sugar, how, where, price, sex and age_Q in my multiple correspondence analysis.
+
+```{r}
+teavars<-c("Tea","How","sugar","how","price","sex","age_Q")
+tea_for_mca<-tea[teavars]
+```
+
+
+
+```{r}
+#Multiple correspondence analysis
+mca <- MCA(tea_for_mca, graph = FALSE)
+
+#Summary of the model
+summary(mca)
+```
+
+The first table represents the eigenvalues. We can see that the first dimension explains 11.5 % of the overall variance of the data and the second one 8.9 %. Those are the dimensions that will later be drawn on the axis of the MCA-plot. 
+
+The second table represents the dimensions on 10 first individuals of the data. The str-column describes each individual's contribution to each dimension. Cos2 describes the quality on a scale from 0 to 1.
+
+By looking at the first and second dimensions of the third table we can see the coordinates where the variable choices will be placed in the plot that will be presented below.
+
+Next I plotted the results.
+
+```{r,fig.height=6,fig.width=6,fig.cap="*Figure 5.6 Visualization of Multiple Correspondence Analysis.*"}
+#Visualize MCA
+plot(mca,habillage="quali",
+invisible="ind",cex=1.0,cex.lab=0.8,cex.axis=1.0,title="Multiple Correspondence Analysis",lwd=0.1, select="contrib 20")
+
+```
+
+We can see for example that having sugar with tea, buying tea from chain store and using teabags go hand in hand, as go getting tea from teashop and drinking unpackaged tea. Maybe dimension 1 describes a little bit "cheap tea" (on the left) vs "hi-fi" tea consumers (on the right). As we see, those who chose teabag+unpackaged and chain store+tea shop are in the middle. In the middle of both axis we can see the options of how people their tea, so they don't seem to contribute so much on the variation of other variables. Only the option 'other' stands out, on the bottom middle. In fact only 9 out of 300 respondents have chosen that option so I don't know how significant this option standing out actually is. 
+
+The second dimension could maybe describe how much the respondent cares about the choises of the tea variables: on the bottom we can see those who don't care about whether their tea is in the bag or unpackaged, or chain store or tea shop, or don't care what label their tea is, and on the top are those who care.
+
+I think that if the first two dimensions explain only about 20 % of the variation in the data, maybe the variables could have been chosen better. So maybe there would be some other variables that could explain each others variation better, but let's leave that stay a mystery for now ;)
